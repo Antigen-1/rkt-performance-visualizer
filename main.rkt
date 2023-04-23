@@ -50,5 +50,7 @@
                                                           (cond ((module-path? m) (set-box! who m))))]
     [("-i" "--interval") interval "specify the interval" (cond ((string->number interval) => (lambda (i) (cond ((positive? i) (set-box! time i))))))]
     #:args args
-    (define tg (make-thread-group))
-    (void (make-object main-window% (unbox who) (unbox time) (list->vector args) tg))))
+    (define mtg (current-thread-group))
+    (define tg (make-thread-group mtg))
+    (parameterize ((current-thread-group tg))
+      (void (make-object main-window% (unbox who) (unbox time) (list->vector args) mtg)))))
