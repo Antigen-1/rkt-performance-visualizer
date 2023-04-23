@@ -100,8 +100,11 @@
                      (dynamic-require (list-ref (params-lst) 0) #f))))))
             
             (let loop ((n 0))
-              (get-data thd)
-              (set-data)
               (cond ((sync/timeout (list-ref (params-lst) 1) thd)
-                     (displayln (format "~a samples are taken" n)))
-                    (else (loop (add1 n))))))))))))
+                     (get-data thd)
+                     (set-data)
+                     (displayln (format "~a samples are taken" (add1 n))))
+                    (else
+                     (get-data thd)
+                     (set-data)
+                     (loop (add1 n))))))))))))
