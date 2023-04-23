@@ -62,4 +62,4 @@
          (if (list? a) (list->vector a) a))))])
 
   (parameterize ((current-command-line-arguments (unbox arguments)))
-    (make-object main-window% (unbox who) (unbox time))))
+    (void (make-object main-window% (unbox who) (unbox time)))))
