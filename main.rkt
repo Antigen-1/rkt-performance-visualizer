@@ -50,5 +50,4 @@
                                                           (cond ((module-path? m) (set-box! who m))))]
     [("-i" "--interval") interval "specify the interval" (cond ((string->number interval) => (lambda (i) (cond ((positive? i) (set-box! time i))))))]
     #:args args
-    (parameterize ((current-command-line-arguments (list->vector args)))
-      (void (make-object main-window% (unbox who) (unbox time))))))
+    (void (make-object main-window% (unbox who) (unbox time) (list->vector args)))))

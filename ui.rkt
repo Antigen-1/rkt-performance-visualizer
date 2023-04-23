@@ -3,11 +3,12 @@
 (provide (contract-out (main-window%
                         (class/c
                          (init-field (mod-path (or/c module-path? #f))
+                                     (args (vectorof string?))
                                      (interval (or/c positive? #f)))))))
 
 (define main-window%
   (class frame%
-    (init-field mod-path interval)
+    (init-field mod-path interval args)
 
     (super-new [label "racket performance visualizer"])
 
@@ -55,7 +56,8 @@
                                                   (current-thread-group tg))
                                      (thread
                                       (lambda ()
-                                        (dynamic-require (list-ref (params-lst) 0) #f)))))
+                                        (parameterize ((current-command-line-arguments args))
+                                          (dynamic-require (list-ref (params-lst) 0) #f))))))
                                  
                                  (let loop ((n 0))
                                    (get-data thd)
