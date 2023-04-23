@@ -22,6 +22,7 @@
     (define red (make-object color% "red"))
 
     (define mc (make-custodian))
+    (define ac (make-custodian mc))
     (define/augment (on-close)
       (custodian-shutdown-all mc))
 
@@ -39,7 +40,7 @@
              (if (vector-ref vec 0) "yes" "no")
              (if (vector-ref vec 1) "yes" "no")
              (if (vector-ref vec 2) "yes" "no")
-             (cond ((vector-ref vec 3) => number->string) (else (number->string (current-memory-use mc))))
+             (cond ((vector-ref vec 3) => number->string) (else (number->string (current-memory-use ac))))
              (number->string (unbox bx)))))
     (define (get-data thd)
       (vector-set-performance-stats! vec thd)
@@ -93,7 +94,8 @@
         (lambda ()
           (when (sync switch)
             (define thd
-              (parameterize ((current-thread-group thread-group))
+              (parameterize ((current-thread-group thread-group)
+                             (current-custodian ac))
                 (thread
                  (lambda ()
                    (parameterize ((current-command-line-arguments args))
