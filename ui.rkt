@@ -4,11 +4,12 @@
                         (class/c
                          (init-field (mod-path (or/c module-path? #f))
                                      (args (vectorof string?))
+                                     (thread-group thread-group?)
                                      (interval (or/c positive? #f)))))))
 
 (define main-window%
   (class frame%
-    (init-field mod-path interval args)
+    (init-field mod-path interval (args (current-command-line-arguments)) (thread-group (current-thread-group)))
 
     (super-new [label "racket performance visualizer"])
 
@@ -49,11 +50,9 @@
                      [callback (lambda _
                                  (send hp enable #f)
 
-                                 (define tg (make-thread-group))
-
                                  (define thd
                                    (parameterize ((current-custodian mc)
-                                                  (current-thread-group tg))
+                                                  (current-thread-group thread-group))
                                      (thread
                                       (lambda ()
                                         (parameterize ((current-command-line-arguments args))
