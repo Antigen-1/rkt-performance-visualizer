@@ -39,7 +39,7 @@
              (if (vector-ref vec 0) "yes" "no")
              (if (vector-ref vec 1) "yes" "no")
              (if (vector-ref vec 2) "yes" "no")
-             (cond ((vector-ref vec 3) => number->string) (else "unknown"))
+             (cond ((vector-ref vec 3) => number->string) (else (number->string (current-memory-use mc))))
              (number->string (unbox bx)))))
     (define (get-data thd)
       (vector-set-performance-stats! vec thd)
