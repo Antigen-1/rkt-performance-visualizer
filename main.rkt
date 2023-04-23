@@ -43,23 +43,12 @@
   (require racket/cmdline racket/class "./ui.rkt" raco/command-name racket/vector)
   (define who (box #f))
   (define time (box #f))
-  (define arguments (box #()))
   (command-line
     #:program (short-program+command-name)
     #:once-each
     [("-m" "--mod-path") path "specify the module path" (let ((m (read (open-input-string path))))
                                                           (cond ((module-path? m) (set-box! who m))))]
     [("-i" "--interval") interval "specify the interval" (cond ((string->number interval) => (lambda (i) (cond ((positive? i) (set-box! time i))))))]
-    #:final
-    [("-a" "--args")
-     args
-     "specify additional arguments for parsing"
-     (set-box!
-      arguments
-      (vector-append
-       (unbox arguments)
-       (let ((a (read (open-input-string args))))
-         (if (list? a) (list->vector a) a))))])
-
-  (parameterize ((current-command-line-arguments (unbox arguments)))
-    (void (make-object main-window% (unbox who) (unbox time)))))
+    #:args args
+    (parameterize ((current-command-line-arguments (list->vector args)))
+      (void (make-object main-window% (unbox who) (unbox time))))))
