@@ -1,3 +1,3 @@
 rpv
 ===
-README text here.
+A simple performace visualizer for racket.

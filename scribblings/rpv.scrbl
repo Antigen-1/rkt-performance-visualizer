@@ -7,4 +7,4 @@
 
 @defmodule[rpv]
 
-Package Description Here
+A simple performace visualizer for racket.
