@@ -40,11 +40,15 @@
   ;; does not run when this file is required by another module. Documentation:
   ;; http://docs.racket-lang.org/guide/Module_Syntax.html#%28part._main-and-test%29
 
-  (require racket/cmdline)
-  (define who (box "world"))
+  (require racket/cmdline racket/class "./ui.rkt")
+  (define who (box #f))
+  (define time (box #f))
   (command-line
-    #:program "my-program"
+    #:program "racket performance visualizer"
     #:once-each
-    [("-n" "--name") name "Who to say hello to" (set-box! who name)]
-    #:args ()
-    (printf "hello ~a~n" (unbox who))))
+    [("-m" "--mod-path") path "specify the module path" (let ((m (read (open-input-string path))))
+                                                          (cond ((module-path? m) (set-box! who m))))]
+    [("-i" "--interval") interval "specify the interval" (cond ((string->number interval) => (lambda (i) (cond ((positive? i) (set-box! time i))))))]
+    #:args args
+    (parameterize ((current-command-line-arguments (list->vector args)))
+      (make-object main-window% (unbox who) (unbox time)))))
