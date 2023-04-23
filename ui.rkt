@@ -48,8 +48,11 @@
                      [callback (lambda _
                                  (send hp enable #f)
 
+                                 (define tg (make-thread-group))
+
                                  (define thd
-                                   (parameterize ((current-custodian mc))
+                                   (parameterize ((current-custodian mc)
+                                                  (current-thread-group tg))
                                      (thread
                                       (lambda ()
                                         (dynamic-require (list-ref (params-lst) 0) #f)))))
