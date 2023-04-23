@@ -1,5 +1,5 @@
 #lang racket/base
-(require racket/gui/base racket/class racket/contract racket/list)
+(require racket/gui/base racket/class racket/contract racket/list racket/function)
 (provide (contract-out (main-window%
                         (class/c
                          (init-field (mod-path (or/c module-path? #f))
@@ -63,13 +63,14 @@
              [callback
               (lambda (f _)
                 (let ((v (send f get-value)))
-                  (with-handlers ((exn:fail:read? (lambda (e) (send f set-field-background red))))
+                  (with-handlers (((disjoin exn:fail:read? exn:fail:contract?) (lambda (_) (send f set-field-background red) (send but enable #f) (params-lst (list-set (params-lst) pos #f)))))
                     (define r (read (open-input-string v)))
                     (if (pd r)
                         (begin (send f set-field-background green)
                                (params-lst (list-set (params-lst) pos r))
                                (cond ((andmap values (params-lst)) (send but enable #t))))
                         (begin (send f set-field-background red)
+                               (params-lst (list-set (params-lst) pos #f))
                                (send but enable #f))))))]))
       (send t set-field-background white)
       t)
