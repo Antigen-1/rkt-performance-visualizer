@@ -89,20 +89,17 @@
     (show #t)
 
     (when (sync switch)
-      (parameterize ((current-custodian mc))
-        (define thd
-          (parameterize ((current-thread-group thread-group))
-            (thread
-             (lambda ()
-               (parameterize ((current-command-line-arguments args))
-                 (dynamic-require (list-ref (params-lst) 0) #f))))))
-        
-        (void
-         (thread
-          (lambda ()
-            (let loop ((n 0))
-              (get-data thd)
-              (set-data)
-              (cond ((sync/timeout (list-ref (params-lst) 1) thd)
-                     (displayln (format "~a samples are taken" n)))
-                    (else (loop (add1 n))))))))))))
+      (define thd
+        (parameterize ((current-thread-group thread-group)
+                       (current-custodian mc))
+          (thread
+           (lambda ()
+             (parameterize ((current-command-line-arguments args))
+               (dynamic-require (list-ref (params-lst) 0) #f))))))
+      
+      (let loop ((n 0))
+        (get-data thd)
+        (set-data)
+        (cond ((sync/timeout (list-ref (params-lst) 1) thd)
+               (displayln (format "~a samples are taken" n)))
+              (else (loop (add1 n))))))))
