@@ -102,6 +102,7 @@
                      (dynamic-require (list-ref (params-lst) 0) #f))))))
             
             (let loop ((n 0))
+              (collect-garbage 'incremental)
               (cond ((sync/timeout (list-ref (params-lst) 1) thd)
                      (get-data thd)
                      (set-data)
