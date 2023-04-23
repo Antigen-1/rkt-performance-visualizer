@@ -85,13 +85,17 @@
       (send t set-field-background white)
       t)
 
-    (if mod-path
-        (params-lst (list-set (params-lst) 0 mod-path))
-        (make-field "module path" module-path? 0))
-
-    (if interval
-        (params-lst (list-set (params-lst) 1 interval))
-        (make-field "interval" positive? 1))
+    (cond ((and mod-path interval)
+           (params-lst (list mod-path interval))
+           (send but enable #t))
+          (mod-path
+           (params-lst (list mod-path #f))
+           (make-field "interval" positive? 1))
+          (interval
+           (params-lst (list #f interval))
+           (make-field "module path" module-path? 0))
+          (else (make-field "module path" module-path? 0)
+                (make-field "interval" positive? 1)))
 
     (inherit show)
     (show #t)))
