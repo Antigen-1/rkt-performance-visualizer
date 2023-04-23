@@ -57,8 +57,7 @@
                                  (let loop ((n 0))
                                    (get-data thd)
                                    (set-data)
-                                   (sleep (list-ref (params-lst) 1))
-                                   (cond ((sync/timeout 0 thd)
+                                   (cond ((sync/timeout (list-ref (params-lst) 1) thd)
                                           (displayln (format "~a samples are taken" n)))
                                          (else (loop (add1 n))))))]))
     
