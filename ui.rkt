@@ -47,12 +47,12 @@
       (vector-set-performance-stats! vec thd)
       (set-box! bx (current-process-milliseconds thd)))
 
-    (define switch (make-semaphore 0))
+    (define ch (make-channel))
     (define but (new button%
                      [label "Ok"] [parent hp][enabled #f]
                      [callback (lambda _
                                  (send hp enable #f)
-                                 (semaphore-post switch))]))
+                                 (channel-put ch (params-lst)))]))
     
     (define params-lst (make-parameter '(#f #f)))
     
@@ -94,22 +94,23 @@
      (parameterize ((current-custodian mc))
        (thread
         (lambda ()
-          (when (sync switch)
-            (define thd
-              (parameterize ((current-thread-group thread-group)
-                             (current-custodian ac))
-                (thread
-                 (lambda ()
-                   (parameterize ((current-command-line-arguments args))
-                     (dynamic-require (list-ref (params-lst) 0) #f))))))
-            
-            (let loop ((n 0))
-              (collect-garbage 'incremental)
-              (cond ((sync/timeout (list-ref (params-lst) 1) thd)
-                     (get-data thd)
-                     (set-data)
-                     (displayln (format "~a samples are taken" (add1 n))))
-                    (else
-                     (get-data thd)
-                     (set-data)
-                     (loop (add1 n))))))))))))
+          (define params (sync ch))
+          
+          (define thd
+            (parameterize ((current-thread-group thread-group)
+                           (current-custodian ac))
+              (thread
+               (lambda ()
+                 (parameterize ((current-command-line-arguments args))
+                   (dynamic-require (list-ref params 0) #f))))))
+          
+          (let loop ((n 0))
+            (collect-garbage 'incremental)
+            (cond ((sync/timeout (list-ref params 1) thd)
+                   (get-data thd)
+                   (set-data)
+                   (displayln (format "~a samples are taken" (add1 n))))
+                  (else
+                   (get-data thd)
+                   (set-data)
+                   (loop (add1 n)))))))))))
