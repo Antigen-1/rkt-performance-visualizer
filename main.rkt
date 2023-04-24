@@ -51,6 +51,6 @@
     [("-i" "--interval") interval "specify the interval" (cond ((string->number interval) => (lambda (i) (cond ((positive? i) (set-box! time i))))))]
     #:args args
     (define mtg (current-thread-group))
-    (define tg (make-thread-group mtg))
+    (define tg (make-thread-group mtg)) ;;all gui operations are placed into this thread group
     (parameterize ((current-thread-group tg))
-      (void (make-object main-window% (unbox who) (unbox time) (list->vector args) mtg)))))
+      (sync (handle-evt (thread (lambda () (make-object main-window% (unbox who) (unbox time) (list->vector args) mtg))) void)))))
