@@ -52,9 +52,9 @@
                      [label "Ok"] [parent hp][enabled #f]
                      [callback (lambda _
                                  (send hp enable #f)
-                                 (channel-put ch (params-lst)))]))
+                                 (channel-put ch (unbox params-lst)))]))
     
-    (define params-lst (make-parameter '(#f #f)))
+    (define params-lst (box '(#f #f)))
     
     (define (make-field lbl pd pos)
       (define t
@@ -63,26 +63,29 @@
              [callback
               (lambda (f _)
                 (let ((v (send f get-value)))
-                  (with-handlers (((disjoin exn:fail:read? exn:fail:contract?) (lambda (_) (send f set-field-background red) (send but enable #f) (params-lst (list-set (params-lst) pos #f)))))
+                  (with-handlers (((disjoin exn:fail:read? exn:fail:contract?) (lambda (_)
+                                                                                 (send f set-field-background red)
+                                                                                 (send but enable #f)
+                                                                                 (set-box! params-lst (list-set (unbox params-lst) pos #f)))))
                     (define r (read (open-input-string v)))
                     (if (pd r)
                         (begin (send f set-field-background green)
-                               (params-lst (list-set (params-lst) pos r))
-                               (cond ((andmap values (params-lst)) (send but enable #t))))
+                               (set-box! params-lst (list-set (unbox params-lst) pos r))
+                               (cond ((andmap values (unbox params-lst)) (send but enable #t))))
                         (begin (send f set-field-background red)
-                               (params-lst (list-set (params-lst) pos #f))
+                               (set-box! params-lst (list-set (unbox params-lst) pos #f))
                                (send but enable #f))))))]))
       (send t set-field-background white)
       t)
 
     (cond ((and mod-path interval)
-           (params-lst (list mod-path interval))
+           (set-box! params-lst (list mod-path interval))
            (send but enable #t))
           (mod-path
-           (params-lst (list mod-path #f))
+           (set-box! params-lst (list mod-path #f))
            (make-field "interval" positive? 1))
           (interval
-           (params-lst (list #f interval))
+           (set-box! params-lst (list #f interval))
            (make-field "module path" module-path? 0))
           (else (make-field "module path" module-path? 0)
                 (make-field "interval" positive? 1)))
