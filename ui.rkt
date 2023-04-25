@@ -1,5 +1,5 @@
 #lang racket/base
-(require racket/gui/base racket/class racket/contract racket/list racket/function)
+(require racket/gui/base racket/class racket/contract racket/list racket/function racket/format)
 (provide (contract-out (main-window%
                         (class/c
                          (init-field (mod-path (or/c module-path? #f))
@@ -52,13 +52,15 @@
                      [label "Ok"] [parent hp][enabled #f]
                      [callback (lambda _
                                  (send hp enable #f)
+                                 (send ep delete-child hp)
                                  (channel-put ch (unbox params-lst)))]))
     
     (define params-lst (box '(#f #f)))
     
-    (define (make-field lbl pd pos)
+    (define (make-field lbl pd init pos)
       (define t
         (new text-field%
+             [init (~a init)]
              [label lbl][parent ip]
              [callback
               (lambda (f _)
@@ -80,15 +82,18 @@
 
     (cond ((and mod-path interval)
            (set-box! params-lst (list mod-path interval))
-           (send but enable #t))
+           (make-field "module path" module-path? mod-path 0)
+           (make-field "interval" positive? interval 1))
           (mod-path
            (set-box! params-lst (list mod-path #f))
-           (make-field "interval" positive? 1))
+           (make-field "module path" module-path? mod-path 0)
+           (make-field "interval" positive? "" 1))
           (interval
            (set-box! params-lst (list #f interval))
-           (make-field "module path" module-path? 0))
-          (else (make-field "module path" module-path? 0)
-                (make-field "interval" positive? 1)))
+           (make-field "module path" module-path? "" 0)
+           (make-field "interval" positive? interval 1))
+          (else (make-field "module path" module-path? mod-path 0)
+                (make-field "interval" positive? interval 1)))
 
     (inherit show)
     (show #t)
