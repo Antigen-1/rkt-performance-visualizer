@@ -40,7 +40,7 @@
   ;; does not run when this file is required by another module. Documentation:
   ;; http://docs.racket-lang.org/guide/Module_Syntax.html#%28part._main-and-test%29
 
-  (require racket/cmdline racket/class "./ui.rkt" raco/command-name racket/vector)
+  (require racket/cmdline racket/class raco/command-name)
   (define who (box #f))
   (define time (box #f))
   (command-line
@@ -53,4 +53,5 @@
     (define mtg (current-thread-group))
     (define tg (make-thread-group mtg)) ;;all gui operations are placed into this thread group
     (parameterize ((current-thread-group tg))
+      (local-require "ui.rkt")
       (sync (handle-evt (thread (lambda () (make-object main-window% (unbox who) (unbox time) (list->vector args) mtg))) void)))))
