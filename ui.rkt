@@ -57,10 +57,10 @@
     
     (define params-lst (box '(#f #f)))
     
-    (define (make-field lbl pd init pos)
+    (define (make-field lbl pd pos)
       (define t
         (new text-field%
-             [init (~a init)]
+             [init-value (cond ((list-ref (unbox params-lst) pos) => ~a) (else ""))]
              [label lbl][parent ip]
              [callback
               (lambda (f _)
@@ -81,19 +81,14 @@
       t)
 
     (cond ((and mod-path interval)
-           (set-box! params-lst (list mod-path interval))
-           (make-field "module path" module-path? mod-path 0)
-           (make-field "interval" positive? interval 1))
+           (set-box! params-lst (list mod-path interval)))
           (mod-path
-           (set-box! params-lst (list mod-path #f))
-           (make-field "module path" module-path? mod-path 0)
-           (make-field "interval" positive? "" 1))
+           (set-box! params-lst (list mod-path #f)))
           (interval
-           (set-box! params-lst (list #f interval))
-           (make-field "module path" module-path? "" 0)
-           (make-field "interval" positive? interval 1))
-          (else (make-field "module path" module-path? mod-path 0)
-                (make-field "interval" positive? interval 1)))
+           (set-box! params-lst (list #f interval))))
+
+    (make-field "module path" module-path? 0)
+    (make-field "interval" positive? 1)
 
     (inherit show)
     (show #t)
