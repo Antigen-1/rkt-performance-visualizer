@@ -3,8 +3,7 @@
 (provide (contract-out (main-window%
                         (class/c
                          (init-field (mod-path (or/c module-path? #f))
-                                     (args (vectorof string?))
-                                     (thread-group thread-group?)
+                                     (args (listof string?))
                                      (interval (or/c positive? #f)))))))
 
 (define main-window%
