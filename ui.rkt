@@ -87,7 +87,7 @@
           (define (get-and-set pid)
             (send lb set (map car mappings) (map (lambda (m) ((cadr m) pid)) mappings)))
 
-          (define-values (sb out in err) (apply subprocess (current-output-port) (current-input-port) (current-error-port) args))
+          (define-values (sb out in err) (apply subprocess (current-output-port) (current-input-port) (current-error-port) #f args))
           
           (let loop ((n 0))
             (cond ((sync/timeout (cadr params) sb)
