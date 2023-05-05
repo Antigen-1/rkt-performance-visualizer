@@ -91,8 +91,7 @@
           
           (let loop ((n 0))
             (cond ((sync/timeout (cadr params) sb)
-                   (get-and-set (subprocess-pid sb))
-                   (displayln (format "~a samples are taken" (add1 n))))
+                   (displayln (format "~a samples are taken" n)))
                   (else
                    (get-and-set (subprocess-pid sb))
                    (loop (add1 n)))))))))))
