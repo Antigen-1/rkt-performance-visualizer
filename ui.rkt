@@ -64,7 +64,8 @@
       t)
 
     (cond ((and mod-path interval)
-           (set-box! params-lst (list mod-path interval)))
+           (set-box! params-lst (list mod-path interval))
+           (send but enable #t))
           (mod-path
            (set-box! params-lst (list mod-path #f)))
           (interval
