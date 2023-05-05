@@ -88,13 +88,8 @@
           (define (get-and-set pid)
             (send lb set (map car mappings) (map (lambda (m) ((cadr m) pid)) mappings)))
 
-          (define-values (sb out in err) (apply subprocess #f #f #f (and (subprocess-group-enabled) 'new) args))
+          (define-values (sb out in err) (apply subprocess (current-output-port) (current-input-port) (current-error-port) (and (subprocess-group-enabled) 'new) (find-executable-path (car args)) (cdr args)))
 
-          (void
-           (thread (lambda () (copy-port out (current-output-port))))
-           (thread (lambda () (copy-port (current-input-port) in)))
-           (thread (lambda () (copy-port err (current-error-port)))))
-          
           (let loop ((n 0))
             (cond ((sync/timeout (cadr params) sb)
                    (log-message (current-logger) 'info 'rpv (format "~a samples are taken" n)))
