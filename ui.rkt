@@ -43,7 +43,7 @@
     (define (make-field lbl pd pos)
       (define t
         (new text-field%
-             [init-value (cond ((list-ref (unbox params-lst) pos) => ~a) (else ""))]
+             [init-value (cond ((list-ref (unbox params-lst) pos) => ~s) (else ""))]
              [label lbl][parent ip]
              [callback
               (lambda (f _)
