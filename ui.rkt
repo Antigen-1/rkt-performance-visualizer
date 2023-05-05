@@ -9,7 +9,7 @@
 
 (define main-window%
   (class frame%
-    (init-field mod-path interval (args (current-command-line-arguments)) (thread-group (current-thread-group)))
+    (init-field mod-path interval args)
 
     (super-new [label "racket performance visualizer"])
 
@@ -22,30 +22,14 @@
     (define red (make-object color% "red"))
 
     (define mc (make-custodian))
-    (define ac (make-custodian mc))
     (define/augment (on-close)
       (custodian-shutdown-all mc))
 
-    (define vec (vector #f #f #f #f))
-    (define bx (box #f))
     (define lb (new list-box%
                     [label "view"][choices null]
                     [parent ep][min-width 600][min-height 400]
                     [style '(single column-headers vertical-label)]
                     [columns '("entry" "value")]))
-    (define (set-data)
-      (send lb set
-            (list "running?" "terminated?" "blocked?" "bytes in use" "processor time" )
-            (list
-             (if (vector-ref vec 0) "yes" "no")
-             (if (vector-ref vec 1) "yes" "no")
-             (if (vector-ref vec 2) "yes" "no")
-             (cond ((vector-ref vec 3) => (lambda (v) (format "thread @ ~a" v)))
-                   (else (format "custodian @ ~a" (current-memory-use ac))))
-             (number->string (unbox bx)))))
-    (define (get-data thd)
-      (vector-set-performance-stats! vec thd)
-      (set-box! bx (current-process-milliseconds thd)))
 
     (define ch (make-channel))
     (define but (new button%
@@ -99,20 +83,17 @@
         (lambda ()
           (define params (sync ch))
           
-          (define thd
-            (parameterize ((current-thread-group thread-group)
-                           (current-custodian ac))
-              (thread
-               (lambda ()
-                 (parameterize ((current-command-line-arguments args))
-                   (dynamic-require (list-ref params 0) #f))))))
+          (define/contract mappings (listof (list/c string? (-> exact-nonnegative-integer? string?))) (dynamic-require (car params) 'table))
+          
+          (define (get-and-set pid)
+            (send lb set (map car mappings) (map (lambda (m) ((cadr m) pid)) mappings)))
+
+          (define-values (sb out in err) (apply subprocess (current-output-port) (current-input-port) (current-error-port) args))
           
           (let loop ((n 0))
-            (cond ((sync/timeout (list-ref params 1) thd)
-                   (get-data thd)
-                   (set-data)
+            (cond ((sync/timeout (cadr params) sb)
+                   (get-and-set (subprocess-pid sb))
                    (displayln (format "~a samples are taken" (add1 n))))
                   (else
-                   (get-data thd)
-                   (set-data)
+                   (get-and-set (subprocess-pid sb))
                    (loop (add1 n)))))))))))
