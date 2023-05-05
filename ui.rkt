@@ -1,5 +1,5 @@
 #lang racket/base
-(require racket/gui/base racket/class racket/contract racket/list racket/function racket/format)
+(require racket/gui/base racket/class racket/contract racket/list racket/function racket/format racket/port)
 (provide (contract-out (main-window%
                         (class/c
                          (init-field (mod-path (or/c module-path? #f))
@@ -88,11 +88,14 @@
           (define (get-and-set pid)
             (send lb set (map car mappings) (map (lambda (m) ((cadr m) pid)) mappings)))
 
-          (define-values (sb out in err) (apply subprocess (current-output-port) (current-input-port) (current-error-port) (and (subprocess-group-enabled) 'new) args))
+          (define-values (sb out in err) (apply subprocess (current-output-port) (current-input-port) #f (and (subprocess-group-enabled) 'new) args))
+
+          (void
+           (thread (lambda () (copy-port err (current-error-port)))))
           
           (let loop ((n 0))
             (cond ((sync/timeout (cadr params) sb)
-                   (displayln (format "~a samples are taken" n)))
+                   (log-message (current-logger) 'info 'rpv (format "~a samples are taken" n)))
                   (else
                    (get-and-set (subprocess-pid sb))
                    (loop (add1 n)))))))))))
