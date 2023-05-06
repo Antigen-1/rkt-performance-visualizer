@@ -6,13 +6,24 @@
 (define (inspect-smaps p)
   (call-with-input-file (format "/proc/~a/smaps" p)
     (lambda (in)
-      (for ((l (in-lines in)))
-        (cond ((string-prefix? l "Swap:")
-               (vector-set! record 0 (string->number (cadr (string-split l)))))
-              ((string-prefix? l "Rss:")
-               (vector-set! record 1 (string->number (cadr (string-split l)))))
-              ((string-prefix? l "Pss:")
-               (vector-set! record 2 (string->number (cadr (string-split l))))))))))
+      (define-values (s r p)
+        (for/fold ((swap 0) (rss 0) (pss 0)) ((l (in-lines in)))
+          (cond ((string-prefix? l "Swap:")
+                 (values (+ swap (string->number (cadr (string-split l))))
+                         rss
+                         pss))
+                ((string-prefix? l "Rss:")
+                 (values swap
+                         (+ rss (string->number (cadr (string-split l))))
+                         pss))
+                ((string-prefix? l "Pss:")
+                 (values swap
+                         rss
+                         (+ pss (string->number (cadr (string-split l))))))
+                (else (values swap rss pss)))))
+      (vector-set! record 0 s)
+      (vector-set! record 1 r)
+      (vector-set! record 2 p))))
 
 (define (filesize size)
   (define n (* 1024 size))
