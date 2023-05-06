@@ -78,7 +78,8 @@
     (show #t)
 
     (void
-     (parameterize ((current-custodian mc))
+     (parameterize ((current-custodian mc)
+                    (current-subprocess-custodian-mode 'kill))
        (thread
         (lambda ()
           (define params (sync ch))
