@@ -32,7 +32,7 @@
   ;; or with `raco test`. The code here does not run when this file is
   ;; required by another module.
 
-  (check-equal? (+ 2 2) 4))
+  )
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
@@ -46,9 +46,8 @@
   (command-line
     #:program (short-program+command-name)
     #:once-each
-    [("-m" "--mod-path") path "specify the module path" (let ((m (read (open-input-string path))))
-                                                          (cond ((module-path? m) (set-box! who m))))]
-    [("-i" "--interval") interval "specify the interval" (cond ((string->number interval) => (lambda (i) (cond ((positive? i) (set-box! time i))))))]
+    [("-m" "--mod-path") path "specify the module path" (set-box! who (read (open-input-string path)))]
+    [("-i" "--interval") interval "specify the interval" (set-box! time (string->number interval))]
     #:args args
     (local-require "ui.rkt")
     (void (make-object main-window% (unbox who) (unbox time) args))))
